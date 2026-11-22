@@ -49,6 +49,39 @@
 .car-model.rolling .wheel{animation:topview-tread-roll .18s linear infinite}
 .car-model.reverse .wheel{animation-direction:reverse}
 @keyframes topview-tread-roll{to{background-position:0 26px}}
+
+/* Correct top-down tire animation: tread travels lengthwise, wheels never tilt sideways */
+.wheel{
+  overflow:hidden;
+  background-color:#111c2b;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    #111c2b 0px,#111c2b 5px,
+    #b3c7d2 5px,#b3c7d2 7px,
+    #263d50 7px,#263d50 12px
+  ) !important;
+  background-size:100% 24px !important;
+  background-position:0 0;
+}
+.wheel:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border:2px solid #8499a8;
+  border-radius:5px;
+  background:linear-gradient(90deg,#0005,transparent 24%,#ffffff18 50%,transparent 76%,#0005);
+  pointer-events:none;
+}
+.car-model.rolling .wheel{
+  animation:tire-roll-lengthwise .22s linear infinite !important;
+}
+.car-model.reverse .wheel{
+  animation-direction:reverse !important;
+}
+@keyframes tire-roll-lengthwise{
+  from{background-position:0 0}
+  to{background-position:0 24px}
+}
 </style></head><body><header><div class="brand">SUN <span>SMARTDRIVE</span></div><div id="status" class="muted">● Not connected</div></header><main><div class="tag">ESP32 ROBOTICS CONTROL</div><h1>Smart Car Control</h1><p>Wireless joystick and motor speed dashboard.</p><div class="grid"><section class="panel"><h2>Virtual joystick</h2><p class="muted">Drag to drive. Release to stop.</p><div class="joy" id="joy" aria-label="Virtual joystick"><div class="knob" id="knob"></div></div><div class="metric">Direction: <b id="direction">STOP</b></div><label for="speed">Motor speed limit</label><div class="row"><input id="speed" type="range" min="0" max="60" value="35"><b id="speedVal">35%</b></div><button class="btn lightbtn" id="light">☼ HEADLIGHTS: OFF</button><div class="row" style="margin-top:16px"><button class="btn primary" id="connect">Connect</button><button class="btn stop" id="stop">EMERGENCY STOP</button></div></section><section class="panel"><h2>ESP32 connection</h2><p class="muted">Use the ESP32 address on the same Wi-Fi network.</p><label for="host">ESP32 base URL</label><div class="row"><input id="host" type="text" value="http://192.168.4.1"><button class="btn" id="save">Save</button></div><div class="metric">Link: <b id="link">Offline</b></div><div class="metric">Last command: <b id="last">STOP</b></div><div class="warning"><b>Hardware setup still required.</b> The ESP32 firmware must implement POST /api/control and POST /api/stop. A motor driver is also required; its model is not known yet. Keep wheels clear during initial tests.</div></section></div><section class="panel" style="margin-top:18px"><div class="tag">LIVE VISUALIZATION</div><h2>Vehicle wheel model</h2><p class="muted">The wheels animate with joystick movement. This is a visual preview, not a measurement of real wheel rotation.</p><div class="car-stage"><div class="car-model" id="carModel"><div class="wheel fl"></div><div class="wheel fr"></div><div class="wheel rl"></div><div class="wheel rr"></div><div class="car-body"></div><div class="car-window"></div><div class="car-nose"></div><div class="car-tail"></div></div></div><div class="metric">Model status: <b id="modelStatus">PARKED</b></div><div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn primary" id="demoMode">▶ START DUMMY DEMO</button><span class="muted" id="demoLabel">Demo mode: OFF</span></div></section></main><script>
 const $=id=>document.getElementById(id);let host=localStorage.getItem('sunSmartCarHost')||$('host').value,pointer=null,last=0,lightOn=false,demoMode=false,demoTimer=null;$('host').value=host;
 function status(ok){$('status').textContent=ok?'● ESP32 reachable':'● Not connected';$('link').textContent=ok?'Online':'Offline'}
